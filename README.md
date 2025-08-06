@@ -1,7 +1,3 @@
-明白了，既然你的项目结构不包含 `src` 目录，我会根据你当前的平铺式项目结构重新生成 `README.md` 中的项目结构和相关说明。以下是更新后的版本：
-
----
-
 ````md
 # who-growth-eval
 
@@ -37,33 +33,47 @@ const result = evaluateGrowth({
   ageInMonths: 24,
   height: 87.1,
   weight: 12.2,
-  heightType: 'height' // 或 'length'，24个月以下请使用 length
+  heightType: 'height' // 'length' 代表身长（小于24个月时用）
 });
 
 console.log(result);
 ```
 
-## 📁 项目结构
+输出示例：
+
+```ts
+{
+  heightEvaluation: '中+',
+  weightEvaluation: '中+',
+  heightWeightEvaluation: '中+',
+  bmi: 16.11,
+  bmiEvaluation: '中+',
+  nutrition: {
+    weight: undefined,
+    height: undefined,
+    heightWeight: undefined,
+    bmi: undefined
+  }
+}
+```
+
+> 💡 如果身高/体重等值落在-2SD以下，`nutrition` 字段将输出例如“低体重”“重度消瘦”等中文评价结果。
+
+## 🏗 项目结构
 
 ```bash
 .
-├── evaluator.ts             # 主评价逻辑
-├── zscore.ts                # Z-score 区间判断函数
-├── bmi.ts                   # BMI 计算函数
-├── references/              # WHO 参考标准 JSON 数据
-│   ├── boy_who_growth_standards_heights.json
-│   ├── boy_who_growth_standards_lengths.json
-│   ├── boy_who_height_weights.json
-│   ├── boy_who_length_weights.json
-│   ├── girl_who_growth_standards_heights.json
-│   ├── girl_who_growth_standards_lengths.json
-│   ├── girl_who_height_weights.json
-│   └── girl_who_length_weights.json
-├── types.ts                 # 类型定义
-├── index.ts                 # 导出入口
-├── use.ts                  # 调试/测试文件
-├── tsconfig.json
-└── package.json
+├── src/
+│   ├── index.ts                // 统一导出入口
+│   ├── evaluator.ts            // 核心评价函数
+│   ├── zscore.ts               // z-score 区间判断
+│   ├── bmi.ts                  // BMI 计算函数
+│   ├── references/             // WHO 标准数据 JSON（身高/体重/身高别体重等）
+│   │   ├── boy_who_growth_standards_heights.json
+│   │   └── ...
+│   └── types.ts                // 类型定义
+├── use.ts                      // 本地运行测试示例
+└── tsconfig.json               // TypeScript 编译配置
 ```
 
 ## 📚 接口说明
@@ -74,7 +84,7 @@ type GrowthInput = {
   ageInMonths: number;
   height: number;
   weight: number;
-  heightType: 'height' | 'length'; // 小于24个月使用 'length'
+  heightType: 'height' | 'length'; // 24个月以下用 length，24个月及以上用 height
 };
 ```
 
@@ -96,40 +106,48 @@ type GrowthEvaluationResult = {
 };
 ```
 
-## 🧠 Z-score 区间说明
+## 🧠 评价标准范围
 
-| 标签 | 区间         | 含义   |
-| -- | ---------- | ---- |
-| 下下 | < -3SD     | 极低水平 |
-| 下  | -3 \~ -2SD | 低水平  |
-| 中下 | -2 \~ -1SD | 稍低   |
-| 中- | -1 \~ 0SD  | 正常偏低 |
-| 中+ | 0 \~ +1SD  | 正常偏高 |
-| 中上 | +1 \~ +2SD | 稍高   |
-| 上  | +2 \~ +3SD | 高水平  |
-| 上上 | > +3SD     | 极高水平 |
+`ZRangeLabel` 为：
 
-根据这些标签，`nutrition` 字段会返回：
+| 代码 | 含义           |
+| -- | ------------ |
+| 下下 | < -3SD       |
+| 下  | -3SD \~ -2SD |
+| 中下 | -2SD \~ -1SD |
+| 中- | -1SD \~ 0SD  |
+| 中+ | 0SD \~ +1SD  |
+| 中上 | +1SD \~ +2SD |
+| 上  | +2SD \~ +3SD |
+| 上上 | > +3SD       |
 
-* **低体重 / 重度低体重**
-* **生长迟缓 / 重度生长迟缓**
-* **消瘦 / 重度消瘦**
-* **超重 / 肥胖 / 重度肥胖**
+营养状态文字（nutrition 字段）将根据上表映射为：
 
-## 🛠 本地调试与运行
+* 低体重、重度低体重
+* 生长迟缓、重度生长迟缓
+* 消瘦、重度消瘦
+* 肥胖、重度肥胖、超重
 
-确保你已安装依赖：
+## 🧩 适用人群
+
+* 儿科医生
+* 基层保健工作者
+* 早教/托育机构
+* 家长工具包
+
+## 🛠 开发与测试
 
 ```bash
 npm install
+npx ts-node use.ts
 ```
 
-使用 `ts-node` 运行测试文件（你需全局或项目中安装 `ts-node`）：
+或运行打包：
 
 ```bash
-npx ts-node use.ts
+npm run build
 ```
 
 ## 📜 License
 
-MIT License © 2025
+MIT License
