@@ -2,9 +2,9 @@ import { evaluateGrowth } from '../src/evaluator';
 
 const result = evaluateGrowth({
   gender: 'boy',
-  ageInMonths: 24,
-  height: 87,
-  weight: 50,
+  ageInMonths: 113,
+  height: 138,
+  weight: 31,
   heightType: 'height'
 });
 

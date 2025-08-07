@@ -59,22 +59,6 @@ console.log(result);
 
 > 💡 如果身高/体重等值落在-2SD以下，`nutrition` 字段将输出例如“低体重”“重度消瘦”等中文评价结果。
 
-## 🏗 项目结构
-
-```bash
-.
-├── src/
-│   ├── index.ts                // 统一导出入口
-│   ├── evaluator.ts            // 核心评价函数
-│   ├── zscore.ts               // z-score 区间判断
-│   ├── bmi.ts                  // BMI 计算函数
-│   ├── references/             // WHO 标准数据 JSON（身高/体重/身高别体重等）
-│   │   ├── boy_who_growth_standards_heights.json
-│   │   └── ...
-│   └── types.ts                // 类型定义
-├── use.ts                      // 本地运行测试示例
-└── tsconfig.json               // TypeScript 编译配置
-```
 
 ## 📚 接口说明
 
