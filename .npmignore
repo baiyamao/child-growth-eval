@@ -1,9 +1,10 @@
 src/
 test/
-*.ts
-*.test.ts
-tsconfig.json
-vitest.config.ts
-.vscode/
-node_modules/
 .idea/
+.git/
+.gitignore
+.npmignore
+tsconfig.json
+.vscode/
+*.log
+*.map

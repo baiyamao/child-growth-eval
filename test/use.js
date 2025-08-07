@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const evaluator_1 = require("../src/evaluator");
 const result = (0, evaluator_1.evaluateGrowth)({
     gender: 'boy',
-    ageInMonths: 24,
-    height: 87,
-    weight: 50,
+    ageInMonths: 113,
+    height: 138,
+    weight: 32,
     heightType: 'height'
 });
 console.log(result);
