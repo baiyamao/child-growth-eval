@@ -21,6 +21,10 @@ export interface GrowthEvaluationResult {
     heightWeight?: string;
     bmi?: string;
   };
+  /** 新增：月龄标准 */
+  standard: ReturnType<typeof getGrowthStandard>;
+  /** 新增：身高别体重标准 */
+  heightWeightStandard?: ReturnType<typeof getHeightWeightStandard> | null;
 }
 
 /**
@@ -143,6 +147,8 @@ export function evaluateGrowth(input: GrowthInput): GrowthEvaluationResult {
     heightWeightEvaluation,
     bmi,
     bmiEvaluation,
-    nutrition
+    nutrition,
+    standard,                // 月龄对应的标准
+    heightWeightStandard     // 身高别体重对应的标准
   };
 }

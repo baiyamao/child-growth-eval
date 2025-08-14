@@ -26,14 +26,14 @@ yarn add who-growth-eval
 ## 🧪 使用示例
 
 ```ts
-import { evaluateGrowth } from 'who-growth-eval';
+import { evaluateGrowth } from '../src';
 
 const result = evaluateGrowth({
-  gender: 'boy',
-  ageInMonths: 24,
-  height: 87.1,
-  weight: 12.2,
-  heightType: 'height' // 'length' 代表身长（小于24个月时用）
+    gender: 'girl',
+    ageInMonths: 23,
+    height: 90,
+    weight: 32,
+    heightType: 'length'// 'length' 代表身长（小于24个月时用）
 });
 
 console.log(result);
@@ -43,18 +43,57 @@ console.log(result);
 
 ```ts
 {
-  heightEvaluation: '中+',
-  weightEvaluation: '中+',
-  heightWeightEvaluation: '中+',
-  bmi: 16.11,
-  bmiEvaluation: '中+',
-  nutrition: {
-    weight: undefined,
-    height: undefined,
-    heightWeight: undefined,
-    bmi: undefined
-  }
+    heightEvaluation: '中上',
+        weightEvaluation: '上上',
+        heightWeightEvaluation: '上上',
+        bmi: 39.51,
+        bmiEvaluation: '上上',
+        nutrition: { heightWeight: '重度肥胖', bmi: '重度肥胖' },
+    standard: {
+        id: 24,
+            age_month: 23,
+            height_minus_3sd: 76,
+            height_minus_2sd: 79.2,
+            height_minus_1sd: 82.3,
+            height_0sd: 85.5,
+            height_plus_1sd: 88.7,
+            height_plus_2sd: 91.9,
+            height_plus_3sd: 95,
+            weight_minus_3sd: 7.9,
+            weight_minus_2sd: 8.9,
+            weight_minus_1sd: 10,
+            weight_0sd: 11.3,
+            weight_plus_1sd: 12.8,
+            weight_plus_2sd: 14.6,
+            weight_plus_3sd: 16.7,
+            head_circumference_minus_3sd: 42.9,
+            head_circumference_minus_2sd: 44.3,
+            head_circumference_minus_1sd: 45.6,
+            head_circumference_0sd: 47,
+            head_circumference_plus_1sd: 48.4,
+            head_circumference_plus_2sd: 49.8,
+            head_circumference_plus_3sd: 51.2,
+            bmi_minus_3sd: 12.2,
+            bmi_minus_2sd: 13.1,
+            bmi_minus_1sd: 14.2,
+            bmi_0sd: 15.4,
+            bmi_plus_1sd: 16.9,
+            bmi_plus_2sd: 18.5,
+            bmi_plus_3sd: 20.4
+    },
+    heightWeightStandard: {
+        id: 91,
+            height: 90,
+            weight_minus_3sd: 9.7,
+            weight_minus_2sd: 10.5,
+            weight_minus_1sd: 11.4,
+            weight_0sd: 12.5,
+            weight_plus_1sd: 13.7,
+            weight_plus_2sd: 15,
+            weight_plus_3sd: 16.5
+    }
 }
+
 ```
 
 > 💡 如果身高/体重等值落在-2SD以下，`nutrition` 字段将输出例如“低体重”“重度消瘦”等中文评价结果。

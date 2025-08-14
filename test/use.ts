@@ -1,11 +1,11 @@
-import { evaluateGrowth } from '../src/evaluator';
+import { evaluateGrowth } from '../src';
 
 const result = evaluateGrowth({
-  gender: 'boy',
-  ageInMonths: 113,
-  height: 138,
+  gender: 'girl',
+  ageInMonths: 23,
+  height: 90,
   weight: 32,
-  heightType: 'height'
+  heightType: 'length'
 });
 
 console.log(result);
