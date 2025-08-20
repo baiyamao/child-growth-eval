@@ -1,8 +1,9 @@
+// @ts-ignore
 import { evaluateGrowth } from '../src';
 
 const result = evaluateGrowth({
-  gender: 'girl',
-  ageInMonths: 23,
+  gender: 'boy',
+  ageInMonths: 24,
   height: 90,
   weight: 32,
   heightType: 'length'

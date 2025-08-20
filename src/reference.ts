@@ -60,11 +60,21 @@ const heightWeightData = {
 };
 
 export function getGrowthStandard(
-  gender: Gender,
-  heightType: HeightType,
-  ageInMonths: number
-): GrowthStandardEntry | undefined {
-  return growthData[gender][heightType].find((entry) => entry.age_month === ageInMonths);
+    gender: Gender,
+    heightType: HeightType,
+    ageInMonths: number
+): (GrowthStandardEntry & { gender: Gender; heightType: HeightType }) | undefined {
+  const entry = growthData[gender][heightType].find(
+      (e) => e.age_month === ageInMonths
+  );
+
+  if (!entry) return undefined;
+
+  return {
+    ...entry,
+    gender,      // 添加性别字段
+    heightType   // 添加身高类型字段
+  };
 }
 
 export function getHeightWeightStandard(
