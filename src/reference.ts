@@ -1,98 +1,109 @@
-import heightBoys from '../references/boy_who_growth_standards_heights.json';
-import lengthBoys from '../references/boy_who_growth_standards_lengths.json';
-import heightGirls from '../references/girl_who_growth_standards_heights.json';
-import lengthGirls from '../references/girl_who_growth_standards_lengths.json';
-
-import hwHeightBoys from '../references/boy_who_height_weights.json';
-import hwLengthBoys from '../references/boy_who_length_weights.json';
-import hwHeightGirls from '../references/girl_who_height_weights.json';
-import hwLengthGirls from '../references/girl_who_length_weights.json';
-
+import rawStandard from '../references/china_growth_standard_2022.json';
 import {
+  AgeMetric,
   Gender,
+  GrowthStandardMetadata,
   HeightType,
-  GrowthStandardEntry,
-  HeightWeightStandardEntry
+  SdThresholds,
+  StandardLookup,
 } from './types';
 
-function parseGrowthData(raw: any[][]): GrowthStandardEntry[] {
-  const [headers, ...rows] = raw;
-  return rows.map((row) => {
-    const entry: any = {};
-    headers?.forEach((key, i) => {
-      entry[key] = typeof row[i] === 'string' ? parseFloat(row[i]) : row[i];
-    });
-    return entry as GrowthStandardEntry;
-  });
+type StandardRow = [number, number, number, number, number, number, number, number];
+
+interface StandardData {
+  ageBased: Record<Gender, Record<AgeMetric, StandardRow[]>>;
+  statureBasedWeight: Record<Gender, Record<HeightType, StandardRow[]>>;
 }
 
-function parseHeightWeightData(raw: any[][]): HeightWeightStandardEntry[] {
-  const [headers, ...rows] = raw;
-  return rows.map((row) => {
-    const entry: any = {};
-    headers?.forEach((key, i) => {
-      entry[key] = typeof row[i] === 'string' ? parseFloat(row[i]) : row[i];
-    });
-    return entry as HeightWeightStandardEntry;
-  });
+const standardData = rawStandard as unknown as StandardData;
+
+export const growthStandardMetadata: GrowthStandardMetadata = {
+  code: 'WS/T 423—2022',
+  name: '7岁以下儿童生长标准',
+  publisher: '中华人民共和国国家卫生健康委员会',
+  publishedAt: '2022-09-19',
+  effectiveAt: '2023-03-01',
+  lookupMode: 'linear-interpolation',
+};
+
+function rowToThresholds(row: StandardRow): SdThresholds {
+  return {
+    minus3sd: row[1],
+    minus2sd: row[2],
+    minus1sd: row[3],
+    median: row[4],
+    plus1sd: row[5],
+    plus2sd: row[6],
+    plus3sd: row[7],
+  };
 }
 
-const growthData = {
-  boy: {
-    height: parseGrowthData(heightBoys),
-    length: parseGrowthData(lengthBoys)
-  },
-  girl: {
-    height: parseGrowthData(heightGirls),
-    length: parseGrowthData(lengthGirls)
-  }
-};
-
-const heightWeightData = {
-  boy: {
-    height: parseHeightWeightData(hwHeightBoys),
-    length: parseHeightWeightData(hwLengthBoys)
-  },
-  girl: {
-    height: parseHeightWeightData(hwHeightGirls),
-    length: parseHeightWeightData(hwLengthGirls)
-  }
-};
-
-export function getGrowthStandard(
-    gender: Gender,
-    heightType: HeightType,
-    ageInMonths: number
-): (GrowthStandardEntry & { gender: Gender; heightType: HeightType }) | undefined {
-  const entry = growthData[gender][heightType].find(
-      (e) => e.age_month === ageInMonths
+function interpolateRows(lower: StandardRow, upper: StandardRow, input: number): StandardLookup {
+  const fraction = lower[0] === upper[0] ? 0 : (input - lower[0]) / (upper[0] - lower[0]);
+  const values = lower.slice(1).map((value, index) =>
+    value + fraction * (upper[index + 1] - value)
   );
-
-  if (!entry) return undefined;
+  const thresholds = rowToThresholds([input, ...values] as StandardRow);
 
   return {
-    ...entry,
-    gender,      // 添加性别字段
-    heightType   // 添加身高类型字段
+    thresholds,
+    reference: {
+      input,
+      lowerKey: lower[0],
+      upperKey: upper[0],
+      fraction,
+      interpolated: lower[0] !== upper[0] && fraction > 0 && fraction < 1,
+      extrapolated: fraction < 0 || fraction > 1,
+    },
   };
+}
+
+function findStandard(
+  series: StandardRow[],
+  input: number,
+  allowUpperExtrapolation = false
+): StandardLookup | undefined {
+  const exact = series.find((row) => row[0] === input);
+  if (exact) return interpolateRows(exact, exact, input);
+
+  const upperIndex = series.findIndex((row) => row[0] > input);
+  if (upperIndex > 0) return interpolateRows(series[upperIndex - 1], series[upperIndex], input);
+
+  if (allowUpperExtrapolation && upperIndex === -1 && series.length >= 2) {
+    return interpolateRows(series[series.length - 2], series[series.length - 1], input);
+  }
+
+  return undefined;
+}
+
+export function inferHeightType(ageInMonths: number): HeightType {
+  return ageInMonths < 24 ? 'length' : 'height';
+}
+
+export function getAgeStandard(
+  gender: Gender,
+  metric: AgeMetric,
+  ageInMonths: number
+): StandardLookup | undefined {
+  const series = standardData.ageBased[gender][metric];
+  const allowUpperExtrapolation = metric !== 'headCircumference' && ageInMonths < 84;
+  return findStandard(series, ageInMonths, allowUpperExtrapolation);
 }
 
 export function getHeightWeightStandard(
   gender: Gender,
   heightType: HeightType,
-  height: number
-): HeightWeightStandardEntry | undefined {
-  const closest = roundToNearestHalf(height);
-  return heightWeightData[gender][heightType].find(
-    (entry) => entry.height === closest
-  );
+  stature: number
+): StandardLookup | undefined {
+  return findStandard(standardData.statureBasedWeight[gender][heightType], stature);
 }
 
-function roundToNearestHalf(value: number): number {
-  const int = Math.floor(value);
-  const decimal = value - int;
-
-  if (decimal < 0.25) return int;
-  else if (decimal < 0.75) return int + 0.5;
-  else return int + 1;
+/** Returns all age-based standards used by the evaluator. */
+export function getGrowthStandards(gender: Gender, ageInMonths: number) {
+  return {
+    weight: getAgeStandard(gender, 'weight', ageInMonths),
+    stature: getAgeStandard(gender, 'stature', ageInMonths),
+    bmi: getAgeStandard(gender, 'bmi', ageInMonths),
+    headCircumference: getAgeStandard(gender, 'headCircumference', ageInMonths),
+  };
 }

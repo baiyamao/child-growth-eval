@@ -1,7 +1,7 @@
 {
   "name": "child-growth-eval",
-  "version": "1.0.5",
-  "description": "儿童生长发育评估工具包，支持 Z 分数计算、百分位查询、生长状况判断等。",
+  "version": "2.0.0",
+  "description": "基于 WS/T 423—2022 的 7 岁以下儿童生长水平与营养状况评价工具包。",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,14 +13,15 @@
   },
   "files": [
     "dist",
-    "references",
+    "references/china_growth_standard_2022.json",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "prepublishOnly": "npm run build"
+    "generate:standard": "python3 scripts/generate_china_standard.py references/7岁以下儿童生长标准.xlsx references/china_growth_standard_2022.json",
+    "prepublishOnly": "npm run build && npm test"
   },
   "repository": {
     "type": "git",
@@ -30,13 +31,11 @@
     "child",
     "growth",
     "evaluation",
-    "zscore",
-    "percentile",
-    "who",
+    "WS/T 423-2022",
+    "中国儿童生长标准",
     "儿童",
     "生长发育",
-    "儿童健康",
-    "Z分数"
+    "儿童健康"
   ],
   "author": "baiyamao",
   "license": "MIT",

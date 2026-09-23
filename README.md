@@ -1,176 +1,120 @@
-````md
-# who-growth-eval
+# child-growth-eval
 
-> 👶 儿童生长发育评价工具包，基于 WHO 标准曲线数据，使用 TypeScript 编写，支持身高、体重、BMI、身高别体重的 Z-score 计算与营养状态评估。
+基于国家卫生健康委员会 **WS/T 423—2022《7岁以下儿童生长标准》** 的 TypeScript 评价工具，适用于出生至未满 7 周岁（0～83 整月龄）儿童。
 
-## ✨ 功能特色
+## 功能
 
-- 支持 0–60 月龄婴幼儿身高/身长发育水平评估
-- 支持体重、BMI、身高别体重（weight-for-height/length）评价
-- 自动选择 WHO 男/女性标准，依据年龄和身高类型匹配参考值
-- 支持中文营养状态输出（如：低体重、消瘦、超重等）
-- TypeScript 编写，结构清晰，可扩展性强
+- 年龄别体重、年龄别身长/身高、年龄别 BMI 评价
+- 身长/身高别体重评价
+- 可选的 0～36 月龄年龄别头围评价
+- 官方五档生长水平：`下`、`中下`、`中`、`中上`、`上`
+- 低体重、生长迟缓、消瘦、超重、肥胖等营养状况评价
+- 对标准表未列出的月龄和非整数身长/身高进行线性插值
+- 返回插值节点、详细 SD 区间和距离最近阈值的差值
 
-## 📦 安装
+本工具使用标准公布的七条 SD 阈值进行分档，**不计算连续 Z-score 或精确百分位**。
 
-```bash
-npm install who-growth-eval
-````
-
-或使用 yarn：
+## 安装
 
 ```bash
-yarn add who-growth-eval
+npm install child-growth-eval
 ```
 
-## 🧪 使用示例
+## 使用
 
 ```ts
-import { evaluateGrowth } from '../src';
+import { evaluateGrowth } from 'child-growth-eval';
 
 const result = evaluateGrowth({
-    gender: 'girl',
-    ageInMonths: 23,
-    height: 90,
-    weight: 32,
-    heightType: 'length'// 'length' 代表身长（小于24个月时用）
+  gender: 'girl',
+  ageInMonths: 25,
+  height: 88.4,
+  weight: 12.3,
+  headCircumference: 48.1,
 });
 
-console.log(result);
+console.log(result.heightEvaluation);        // 官方五档评价
+console.log(result.sdBands.height);          // 详细 SD 区间
+console.log(result.nutrition);               // 营养状况
+console.log(result.evaluations.height.reference); // 插值节点与比例
 ```
 
-输出示例：
+### 输入
 
 ```ts
-{
-    heightEvaluation: '中上',
-        weightEvaluation: '上上',
-        heightWeightEvaluation: '上上',
-        bmi: 39.51,
-        bmiEvaluation: '上上',
-        nutrition: { heightWeight: '重度肥胖', bmi: '重度肥胖' },
-    standard: {
-        id: 24,
-            age_month: 23,
-            height_minus_3sd: 76,
-            height_minus_2sd: 79.2,
-            height_minus_1sd: 82.3,
-            height_0sd: 85.5,
-            height_plus_1sd: 88.7,
-            height_plus_2sd: 91.9,
-            height_plus_3sd: 95,
-            weight_minus_3sd: 7.9,
-            weight_minus_2sd: 8.9,
-            weight_minus_1sd: 10,
-            weight_0sd: 11.3,
-            weight_plus_1sd: 12.8,
-            weight_plus_2sd: 14.6,
-            weight_plus_3sd: 16.7,
-            head_circumference_minus_3sd: 42.9,
-            head_circumference_minus_2sd: 44.3,
-            head_circumference_minus_1sd: 45.6,
-            head_circumference_0sd: 47,
-            head_circumference_plus_1sd: 48.4,
-            head_circumference_plus_2sd: 49.8,
-            head_circumference_plus_3sd: 51.2,
-            bmi_minus_3sd: 12.2,
-            bmi_minus_2sd: 13.1,
-            bmi_minus_1sd: 14.2,
-            bmi_0sd: 15.4,
-            bmi_plus_1sd: 16.9,
-            bmi_plus_2sd: 18.5,
-            bmi_plus_3sd: 20.4
-    },
-    heightWeightStandard: {
-        id: 91,
-            height: 90,
-            weight_minus_3sd: 9.7,
-            weight_minus_2sd: 10.5,
-            weight_minus_1sd: 11.4,
-            weight_0sd: 12.5,
-            weight_plus_1sd: 13.7,
-            weight_plus_2sd: 15,
-            weight_plus_3sd: 16.5
-    }
-}
-
-```
-
-> 💡 如果身高/体重等值落在-2SD以下，`nutrition` 字段将输出例如“低体重”“重度消瘦”等中文评价结果。
-
-
-## 📚 接口说明
-
-```ts
-type GrowthInput = {
+interface GrowthInput {
   gender: 'boy' | 'girl';
-  ageInMonths: number;
-  height: number;
-  weight: number;
-  heightType: 'height' | 'length'; // 24个月以下用 length，24个月及以上用 height
-};
+  ageInMonths: number;       // 0～83 的整数
+  height: number;            // cm
+  weight: number;            // kg
+  heightType?: 'length' | 'height'; // 兼容字段，通常无需传入
+  headCircumference?: number;       // cm，仅适用于 0～36 月龄
+}
 ```
 
-返回类型：
+24 月以下自动使用卧位身长标准，24 月及以上自动使用立位身高标准。若仍传入 `heightType`，其值必须与月龄一致。
 
-```ts
-type GrowthEvaluationResult = {
-  heightEvaluation: ZRangeLabel;
-  weightEvaluation: ZRangeLabel | null;
-  heightWeightEvaluation: ZRangeLabel | null;
-  bmi: number;
-  bmiEvaluation: ZRangeLabel | null;
-  nutrition: {
-    height?: string;
-    weight?: string;
-    heightWeight?: string;
-    bmi?: string;
-  };
-};
+## 插值规则
+
+0～24 月龄的年龄表按月提供标准值；24 月以后按 3 个月提供。缺失月份对相邻节点的七条 SD 阈值分别做线性插值。例如 25 月龄使用 24 月和 27 月节点，比例为 `1/3`。
+
+标准最后一个公布节点为 81 月。82、83 月沿 78～81 月的末段趋势线性外推，返回结果中的 `reference.extrapolated` 为 `true`。
+
+身长别体重标准范围为 45～100 cm，身高别体重标准范围为 75～130 cm。范围内的非整数值在相邻 1 cm 节点之间插值；超出范围时该指标返回 `null`，并在 `unavailableReasons` 中说明原因。
+
+插值是数字化实现策略，并非标准正文另行公布的中间节点。结果接近分界线时，应结合测量误差和连续生长趋势判断。
+
+## 返回结果
+
+`heightEvaluation`、`weightEvaluation`、`heightWeightEvaluation`、`bmiEvaluation` 和可选的 `headCircumferenceEvaluation` 使用官方五档。
+
+`sdBands` 提供更细的阈值区间：
+
+- `belowMinus3Sd`
+- `minus3ToMinus2Sd`
+- `minus2ToMinus1Sd`
+- `minus1ToMedian`
+- `medianToPlus1Sd`
+- `plus1ToPlus2Sd`
+- `plus2ToPlus3Sd`
+- `atOrAbovePlus3Sd`
+
+每项 `evaluations` 还包含：
+
+- 实测值及七条 SD 阈值
+- 用于插值的上下节点和比例
+- `interpolated` / `extrapolated` 标记
+- 距离最近阈值的有符号差值和绝对差值
+
+## 从 v1 升级
+
+v2 仅使用 WS/T 423—2022，不再使用 WHO 数据。主要变化：
+
+- 支持范围改为 0～83 整月龄。
+- 生长水平由八档改为国家标准规定的五档。
+- 原来的细分位置改由 `sdBands` 表示。
+- `heightType` 不再是必填项。
+- `standard` 返回标准元数据；各指标阈值位于 `evaluations`。
+- BMI 保留完整计算精度，不在计算阶段四舍五入。
+
+## 数据来源与生成
+
+项目参考数据来自国家卫生健康委员会发布的 [WS/T 423—2022 官方标准全文](https://www.nhc.gov.cn/cms-search/downFiles/e38068f0a62d4a1eb1bd451414444ec1.pdf)附录 B。仓库内的生成脚本会从 `references/7岁以下儿童生长标准.xlsx` 提取并校验数据：
+
+```bash
+npm run generate:standard
 ```
 
-## 🧠 评价标准范围
+脚本检查数据行数、键顺序、身长/身高范围及七条 SD 阈值的单调性。
 
-`ZRangeLabel` 为：
-
-| 代码 | 含义           |
-| -- | ------------ |
-| 下下 | < -3SD       |
-| 下  | -3SD \~ -2SD |
-| 中下 | -2SD \~ -1SD |
-| 中- | -1SD \~ 0SD  |
-| 中+ | 0SD \~ +1SD  |
-| 中上 | +1SD \~ +2SD |
-| 上  | +2SD \~ +3SD |
-| 上上 | > +3SD       |
-
-营养状态文字（nutrition 字段）将根据上表映射为：
-
-* 低体重、重度低体重
-* 生长迟缓、重度生长迟缓
-* 消瘦、重度消瘦
-* 肥胖、重度肥胖、超重
-
-## 🧩 适用人群
-
-* 儿科医生
-* 基层保健工作者
-* 早教/托育机构
-* 家长工具包
-
-## 🛠 开发与测试
+## 开发
 
 ```bash
 npm install
-npx ts-node use.ts
-```
-
-或运行打包：
-
-```bash
 npm run build
+npm test
 ```
 
-## 📜 License
+## License
 
-MIT License
+MIT

@@ -1,5 +1,23 @@
-// index.ts
 export { evaluateGrowth } from './evaluator';
 export type { GrowthInput, GrowthEvaluationResult } from './evaluator';
-export { getGrowthStandard, getHeightWeightStandard } from './reference';
-export type { Gender, HeightType } from './types';
+export {
+  getAgeStandard,
+  getGrowthStandards,
+  getHeightWeightStandard,
+  growthStandardMetadata,
+  inferHeightType,
+} from './reference';
+export type {
+  AgeMetric,
+  Gender,
+  GrowthLevel,
+  GrowthStandardMetadata,
+  HeightType,
+  MetricEvaluation,
+  NearestBoundary,
+  NutritionStatus,
+  ReferenceInterpolation,
+  SdBand,
+  SdThresholds,
+  StandardLookup,
+} from './types';
