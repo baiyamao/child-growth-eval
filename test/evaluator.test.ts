@@ -57,7 +57,7 @@ describe('WS/T 423—2022 reference lookup', () => {
 });
 
 describe('evaluateGrowth', () => {
-  it('returns official levels, detailed SD bands and interpolation metadata', () => {
+  it('returns eight growth levels, detailed SD bands and interpolation metadata', () => {
     const result = evaluateGrowth({
       gender: 'boy',
       ageInMonths: 25,
@@ -67,8 +67,8 @@ describe('evaluateGrowth', () => {
 
     expect(result.standard.code).toBe('WS/T 423—2022');
     expect(result.heightType).toBe('height');
-    expect(result.heightEvaluation).toBe('中');
-    expect(result.weightEvaluation).toBe('中');
+    expect(result.heightEvaluation).toBe('中+');
+    expect(result.weightEvaluation).toBe('中+');
     expect(result.sdBands.height).toBe('medianToPlus1Sd');
     expect(result.evaluations.height.reference.interpolated).toBe(true);
     expect(result.evaluations.height.nearestBoundary.absoluteDistance).toBeLessThan(0.04);
@@ -91,16 +91,20 @@ describe('evaluateGrowth', () => {
     expect(belowMinus3.nutrition.weight).toBe('重度低体重');
   });
 
-  it('applies every official growth-level boundary exactly', () => {
+  it('applies every eight-level growth boundary exactly', () => {
     const standard = getAgeStandard('girl', 'weight', 12);
     if (!standard) throw new Error('missing test standard');
     const base = { gender: 'girl' as const, ageInMonths: 12, height: 75.2 };
 
-    expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus2sd - 0.001 }).weightEvaluation).toBe('下');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus3sd - 0.001 }).weightEvaluation).toBe('下下');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus3sd }).weightEvaluation).toBe('下');
     expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus2sd }).weightEvaluation).toBe('中下');
-    expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus1sd }).weightEvaluation).toBe('中');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.minus1sd }).weightEvaluation).toBe('中-');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.median }).weightEvaluation).toBe('中+');
     expect(evaluateGrowth({ ...base, weight: standard.thresholds.plus1sd }).weightEvaluation).toBe('中上');
     expect(evaluateGrowth({ ...base, weight: standard.thresholds.plus2sd }).weightEvaluation).toBe('上');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.plus3sd - 0.001 }).weightEvaluation).toBe('上');
+    expect(evaluateGrowth({ ...base, weight: standard.thresholds.plus3sd }).weightEvaluation).toBe('上上');
   });
 
   it('applies wasting and obesity boundaries to weight-for-stature', () => {
@@ -127,7 +131,7 @@ describe('evaluateGrowth', () => {
     const result = evaluateGrowth({
       gender: 'girl', ageInMonths: 30, height: 91.9, weight: 13, headCircumference: 47.9,
     });
-    expect(result.headCircumferenceEvaluation).toBe('中');
+    expect(result.headCircumferenceEvaluation).toBe('中+');
     expect(result.evaluations.headCircumference?.reference.interpolated).toBe(false);
   });
 

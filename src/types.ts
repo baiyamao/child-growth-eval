@@ -2,8 +2,16 @@ export type Gender = 'boy' | 'girl';
 export type HeightType = 'height' | 'length';
 export type AgeMetric = 'weight' | 'stature' | 'bmi' | 'headCircumference';
 
-/** WS/T 423—2022 表2规定的五档生长水平。 */
-export type GrowthLevel = '下' | '中下' | '中' | '中上' | '上';
+/** 基于 WS/T 423—2022 七条 SD 阈值细分的八档生长水平。 */
+export type GrowthLevel =
+  | '下下'
+  | '下'
+  | '中下'
+  | '中-'
+  | '中+'
+  | '中上'
+  | '上'
+  | '上上';
 
 /** 相对于七条标准差阈值的详细区间；不是连续 Z-score。 */
 export type SdBand =

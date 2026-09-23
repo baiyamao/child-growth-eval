@@ -76,11 +76,14 @@ const boundaryEntries = (thresholds: SdThresholds): Array<[NearestBoundary['sd']
 ];
 
 function evaluateLevel(value: number, thresholds: SdThresholds): GrowthLevel {
+  if (value < thresholds.minus3sd) return '下下';
   if (value < thresholds.minus2sd) return '下';
   if (value < thresholds.minus1sd) return '中下';
-  if (value < thresholds.plus1sd) return '中';
+  if (value < thresholds.median) return '中-';
+  if (value < thresholds.plus1sd) return '中+';
   if (value < thresholds.plus2sd) return '中上';
-  return '上';
+  if (value < thresholds.plus3sd) return '上';
+  return '上上';
 }
 
 function evaluateSdBand(value: number, thresholds: SdThresholds): SdBand {

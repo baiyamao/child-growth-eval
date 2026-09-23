@@ -7,7 +7,7 @@
 - 年龄别体重、年龄别身长/身高、年龄别 BMI 评价
 - 身长/身高别体重评价
 - 可选的 0～36 月龄年龄别头围评价
-- 官方五档生长水平：`下`、`中下`、`中`、`中上`、`上`
+- 八档生长水平：`下下`、`下`、`中下`、`中-`、`中+`、`中上`、`上`、`上上`
 - 低体重、生长迟缓、消瘦、超重、肥胖等营养状况评价
 - 对标准表未列出的月龄和非整数身长/身高进行线性插值
 - 返回插值节点、详细 SD 区间和距离最近阈值的差值
@@ -33,7 +33,7 @@ const result = evaluateGrowth({
   headCircumference: 48.1,
 });
 
-console.log(result.heightEvaluation);        // 官方五档评价
+console.log(result.heightEvaluation);        // 八档生长水平评价
 console.log(result.sdBands.height);          // 详细 SD 区间
 console.log(result.nutrition);               // 营养状况
 console.log(result.evaluations.height.reference); // 插值节点与比例
@@ -66,7 +66,16 @@ interface GrowthInput {
 
 ## 返回结果
 
-`heightEvaluation`、`weightEvaluation`、`heightWeightEvaluation`、`bmiEvaluation` 和可选的 `headCircumferenceEvaluation` 使用官方五档。
+`heightEvaluation`、`weightEvaluation`、`heightWeightEvaluation`、`bmiEvaluation` 和可选的 `headCircumferenceEvaluation` 使用八档生长水平：
+
+- `下下`：小于 `-3SD`
+- `下`：`-3SD`（含）至 `-2SD`（不含）
+- `中下`：`-2SD`（含）至 `-1SD`（不含）
+- `中-`：`-1SD`（含）至 `0SD`（不含）
+- `中+`：`0SD`（含）至 `+1SD`（不含）
+- `中上`：`+1SD`（含）至 `+2SD`（不含）
+- `上`：`+2SD`（含）至 `+3SD`（不含）
+- `上上`：大于或等于 `+3SD`
 
 `sdBands` 提供更细的阈值区间：
 
@@ -91,8 +100,8 @@ interface GrowthInput {
 v2 仅使用 WS/T 423—2022，不再使用 WHO 数据。主要变化：
 
 - 支持范围改为 0～83 整月龄。
-- 生长水平由八档改为国家标准规定的五档。
-- 原来的细分位置改由 `sdBands` 表示。
+- 生长水平使用国家标准公布的七条 SD 阈值细分为八档。
+- `sdBands` 同时提供便于程序处理的稳定英文区间标识。
 - `heightType` 不再是必填项。
 - `standard` 返回标准元数据；各指标阈值位于 `evaluations`。
 - BMI 保留完整计算精度，不在计算阶段四舍五入。
