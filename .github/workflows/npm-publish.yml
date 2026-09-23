@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
       - run: npm ci
       - run: npm run build
       - run: echo "Build complete"
@@ -26,11 +26,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-      - run: npm install --global npm@latest
+          node-version: 22
       - run: npm ci
       # package-lock.json was generated on macOS; npm may omit Rollup's Linux
       # optional binary from a cross-platform lockfile (npm/cli#4828).
       - run: npm install --no-save @rollup/rollup-linux-x64-gnu@4.46.2
       - run: npm run build
+      # npm Trusted Publishing requires a recent npm CLI. Upgrade only after
+      # npm ci so the compact npm 10 lockfile remains cross-platform compatible.
+      - run: npm install --global npm@latest
       - run: npm publish --provenance
