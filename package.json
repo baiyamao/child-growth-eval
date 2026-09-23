@@ -1,6 +1,6 @@
 {
   "name": "child-growth-eval",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "基于 WS/T 423—2022 的 7 岁以下儿童生长水平与营养状况评价工具包。",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

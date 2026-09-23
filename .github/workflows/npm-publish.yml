@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - run: npm ci
       - run: npm run build
       - run: echo "Build complete"
@@ -19,17 +19,18 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org/
+          node-version: 24
+      - run: npm install --global npm@latest
       - run: npm ci
       # package-lock.json was generated on macOS; npm may omit Rollup's Linux
       # optional binary from a cross-platform lockfile (npm/cli#4828).
       - run: npm install --no-save @rollup/rollup-linux-x64-gnu@4.46.2
       - run: npm run build
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - run: npm publish --provenance
